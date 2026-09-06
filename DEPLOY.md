@@ -24,6 +24,39 @@ any subfolder structure.
 
 ---
 
+## One-click install (recommended)
+
+On the clinic PC, with **Node.js 20+** and **Git for Windows** installed:
+
+1. Clone the repo (once):
+   ```bash
+   git clone https://github.com/rutvizmistry/rxmd.git
+   ```
+2. Double-click **`install.bat`**. It installs dependencies, builds the app, optionally
+   sets the shared password, optionally adds RxMD to Windows startup, and launches the
+   **tray controller** — a blue **Rx** icon in the system tray (bottom-right).
+
+**Right-click the tray icon** to:
+- see whether the server is **Running/Stopped**,
+- **Open in browser** (double-clicking the icon also opens it),
+- copy the **LAN** address and the **Tailscale** address for iPad/iPhone/other PCs
+  (both work automatically — the server listens on all interfaces; Tailscale is shown
+  when a tailnet IP or the `tailscale` CLI is detected),
+- **Start / Stop / Restart** the server,
+- **Update RxMD** (runs `update.bat`), or view the server log,
+- **Exit** (stops the server).
+
+To get future changes, double-click **`update.bat`** — it runs `git pull`, reinstalls,
+rebuilds, and tells the tray to restart the server with the new version.
+
+> The tray runs in the logged-in desktop session — ideal for an always-on PC that stays
+> logged in. If you'd rather run it headless as a Windows **service** (no login needed),
+> use the manual steps below instead.
+
+---
+
+## Manual / service install
+
 ## 1. Build (on your dev machine)
 
 ```bash

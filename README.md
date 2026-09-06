@@ -51,9 +51,13 @@ password: `npm run set-password`.
 
 ## Production / clinic deployment
 
-See **[DEPLOY.md](DEPLOY.md)** — build, copy to the clinic PC, `npm install --omit=dev`,
-configure folders, set the password, and install as an auto-starting Windows service, then
-open `http://<clinic-pc-ip>:8787` from any device.
+**One-click (recommended):** on the clinic PC (Node.js 20+ and Git for Windows installed),
+`git clone` the repo and double-click **`install.bat`**. It installs, builds, optionally
+sets the password + auto-start, and launches a **system-tray controller** (blue **Rx**
+icon) with Start/Stop/Restart, the server status, and copyable **LAN** + **Tailscale**
+addresses for iPad/iPhone/other PCs. Double-click **`update.bat`** to pull future changes
+and restart. See **[DEPLOY.md](DEPLOY.md)** for details (and the manual/Windows-service
+alternative).
 
 ## How it works
 
