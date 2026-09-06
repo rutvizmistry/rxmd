@@ -1,0 +1,27 @@
+{
+  "//": "Copy this to config.json and edit the folder paths. On first run the server also writes a starter config.json automatically. Set the password with: npm run set-password",
+  "port": 8787,
+  "host": "0.0.0.0",
+  "useCrossref": false,
+
+  "//passwordHash": "Do not edit by hand. Set via: npm run set-password",
+  "//sessionSecret": "Auto-generated random secret; keep it private and stable so sessions survive restarts.",
+
+  "categories": {
+    "research": {
+      "label": "Research Articles",
+      "watch": ["D:\\RxMD\\Inbox\\Research"],
+      "library": "D:\\RxMD\\Library\\Research"
+    },
+    "ebooks": {
+      "label": "E-books",
+      "watch": ["D:\\RxMD\\Inbox\\Ebooks"],
+      "library": "D:\\RxMD\\Library\\Ebooks"
+    },
+    "others": {
+      "label": "Others",
+      "watch": ["D:\\RxMD\\Inbox\\Others"],
+      "library": "D:\\RxMD\\Library\\Others"
+    }
+  }
+}

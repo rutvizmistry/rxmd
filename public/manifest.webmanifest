@@ -1,0 +1,13 @@
+{
+  "name": "RxMD — Journal Library",
+  "short_name": "RxMD",
+  "description": "A local, QxMD-style journal library that watches a folder, files PDFs by journal/year/month, and saves annotations back into the files.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f4f6f8",
+  "theme_color": "#0b6ab0",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "192x192 512x512", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>RxMD — Journal Library</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#0b6ab0" />
+  </head>
+  <body>
+    <!-- Login gate (shown until a valid session cookie exists) -->
+    <div id="login" class="login" hidden>
+      <form id="loginForm" class="login-card">
+        <div class="brand big"><span class="brand-mark">Rx</span><span class="brand-name">RxMD</span></div>
+        <p class="muted">Enter the shared password to open the library.</p>
+        <input id="loginPw" type="password" class="login-input" placeholder="Password" autocomplete="current-password" />
+        <button class="btn btn-primary" type="submit">Sign in</button>
+        <div id="loginErr" class="login-err" hidden></div>
+      </form>
+    </div>
+
+    <div id="app" hidden>
+      <header class="topbar">
+        <div class="brand" id="brandHome" title="Home">
+          <span class="brand-mark">Rx</span><span class="brand-name">RxMD</span>
+        </div>
+        <nav class="breadcrumbs" id="breadcrumbs"></nav>
+        <div class="topbar-actions">
+          <input id="searchBox" class="search" type="search" placeholder="Search title, author, journal…" />
+          <button id="uploadBtn" class="btn" title="Add PDFs / e-books / files">＋ Add</button>
+          <button id="themeBtn" class="btn btn-icon" title="Toggle dark mode">🌙</button>
+          <button id="settingsBtn" class="btn btn-icon" title="Folders &amp; settings">⚙</button>
+        </div>
+      </header>
+
+      <div id="statusBar" class="statusbar" hidden></div>
+
+      <main id="view" class="view"></main>
+    </div>
+
+    <!-- hidden file input used by the Add button -->
+    <input id="fileInput" type="file" multiple hidden
+           accept=".pdf,.epub,.png,.jpg,.jpeg,.gif,.webp,.bmp,.tif,.tiff,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.md,.rtf,.odt,.csv" />
+
+    <!-- PDF Reader overlay -->
+    <div id="reader" class="reader" hidden>
+      <div class="reader-topbar">
+        <button id="readerClose" class="btn" title="Back to library">← Back</button>
+        <span id="readerTitle" class="reader-title"></span>
+        <div class="tool-group zoom">
+          <button class="tool" id="zoomOut" title="Zoom out">−</button>
+          <span id="zoomLevel" class="zoom-level">100%</span>
+          <button class="tool" id="zoomIn" title="Zoom in">+</button>
+        </div>
+        <button class="tool" id="pdfDarkBtn" title="Dark mode for this PDF">🌓</button>
+        <select id="pdfShade" class="shade-select" title="Dark mode shade">
+          <option value="charcoal">Charcoal</option>
+          <option value="black">Black</option>
+          <option value="slate">Slate</option>
+          <option value="gray">Dark gray</option>
+        </select>
+        <button id="saveAnnBtn" class="btn btn-primary" title="Save annotations into the PDF file">Save</button>
+      </div>
+
+      <div class="reader-tools">
+        <div class="tool-group">
+          <button class="tool" data-tool="cursor" title="Select / move / scroll">🖱</button>
+          <button class="tool" data-tool="highlight" title="Highlight text">🖍</button>
+          <button class="tool" data-tool="underline" title="Underline text"><span class="u-icon">U</span></button>
+          <button class="tool" data-tool="freetext" title="Text box">T</button>
+          <button class="tool" data-tool="ink" title="Freehand draw">✎</button>
+          <button class="tool" data-tool="stamp" title="Insert image / stamp">🖼</button>
+        </div>
+
+        <div class="params" id="annParams">
+          <div class="swatches" id="annSwatches"></div>
+          <input type="color" id="annColor" class="ann-color" value="#ffd400" title="Custom color" />
+          <label class="slider" id="thicknessWrap" title="Thickness">
+            <span class="slider-label">Size</span>
+            <input type="range" id="annThickness" min="1" max="24" value="12" />
+          </label>
+          <label class="slider" id="opacityWrap" title="Opacity">
+            <span class="slider-label">Opacity</span>
+            <input type="range" id="annOpacity" min="10" max="100" value="100" />
+          </label>
+          <label class="slider" id="fontSizeWrap" title="Font size">
+            <span class="slider-label">Font</span>
+            <input type="range" id="annFontSize" min="8" max="60" value="16" />
+          </label>
+          <button type="button" class="tool" id="underlineOptsBtn" title="Underline placement for this PDF">⚙</button>
+        </div>
+
+        <div class="tool-group right">
+          <button class="tool" id="undoBtn" title="Undo (Ctrl+Z)">↶</button>
+          <button class="tool" id="redoBtn" title="Redo (Ctrl+Y)">↷</button>
+          <button class="tool" id="deleteBtn" title="Delete selected annotation (Del)">🗑</button>
+        </div>
+      </div>
+
+      <div id="viewerContainer" class="viewerContainer">
+        <div id="viewer" class="pdfViewer"></div>
+      </div>
+    </div>
+
+    <!-- EPUB reader overlay -->
+    <div id="epubReader" class="reader epub" hidden>
+      <div class="reader-topbar">
+        <button id="epubClose" class="btn" title="Back to library">← Back</button>
+        <span id="epubTitle" class="reader-title"></span>
+        <button id="epubHighlight" class="tool" title="Highlight (select text to mark)">🖍</button>
+        <span id="epubProgress" class="zoom-level"></span>
+      </div>
+      <div class="epub-stage">
+        <button id="epubPrev" class="epub-nav prev" title="Previous">‹</button>
+        <div id="epubArea" class="epub-area"></div>
+        <button id="epubNext" class="epub-nav next" title="Next">›</button>
+      </div>
+    </div>
+
+    <!-- Image / other-file overlay -->
+    <div id="mediaViewer" class="reader media" hidden>
+      <div class="reader-topbar">
+        <button id="mediaClose" class="btn" title="Back to library">← Back</button>
+        <span id="mediaTitle" class="reader-title"></span>
+        <a id="mediaDownload" class="btn" download>Download</a>
+      </div>
+      <div id="mediaBody" class="media-body"></div>
+    </div>
+
+    <!-- Upload dialog -->
+    <dialog id="uploadDialog" class="dialog">
+      <form method="dialog" class="dialog-body">
+        <h2>Add files</h2>
+        <p class="muted">Files are copied into the chosen category's library on the clinic PC, mirroring any subfolder you name.</p>
+        <label class="field">
+          <span>Category</span>
+          <select id="uploadCategory"></select>
+        </label>
+        <label class="field">
+          <span>Subfolder <span class="muted">(optional, e.g. <i>Cardiology/2026</i>)</span></span>
+          <input id="uploadSubpath" type="text" placeholder="" />
+        </label>
+        <div id="uploadList" class="upload-list muted">No files chosen.</div>
+        <div id="uploadProgress" class="upload-progress" hidden><div class="bar"></div></div>
+        <div class="dialog-actions">
+          <button type="button" class="btn" id="uploadPickBtn">Choose files…</button>
+          <button type="button" class="btn btn-primary" id="uploadGoBtn" disabled>Upload</button>
+          <button value="ok" class="btn">Close</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Settings dialog -->
+    <dialog id="settingsDialog" class="dialog">
+      <form method="dialog" class="dialog-body">
+        <h2>Folders &amp; settings</h2>
+        <p class="muted">RxMD watches each category's inbox folder on the clinic PC and copies new files into that category's library, mirroring the subfolder structure.</p>
+
+        <div id="catSettings" class="cat-settings"></div>
+
+        <label class="check">
+          <input type="checkbox" id="useCrossref" />
+          Optional: enrich PDF title / authors / abstract online via Crossref (uses a DOI found in the PDF).
+        </label>
+
+        <div class="folder-row">
+          <div>
+            <div class="folder-label">Rescan libraries</div>
+            <div class="muted">Re-reads the library + inbox folders and updates the catalog.</div>
+          </div>
+          <button type="button" class="btn" id="rescanBtn">Rescan now</button>
+        </div>
+
+        <details class="pw-details">
+          <summary>Change shared password</summary>
+          <label class="field"><span>Current password</span><input id="pwCurrent" type="password" autocomplete="current-password" /></label>
+          <label class="field"><span>New password</span><input id="pwNext" type="password" autocomplete="new-password" /></label>
+          <button type="button" class="btn" id="pwSaveBtn">Update password</button>
+        </details>
+
+        <div class="dialog-actions">
+          <button type="button" class="btn" id="logoutBtn">Sign out</button>
+          <button type="button" class="btn btn-primary" id="saveCfgBtn">Save settings</button>
+          <button value="ok" class="btn">Done</button>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Underline placement dialog (per-PDF) -->
+    <dialog id="underlineDialog" class="dialog">
+      <form method="dialog" class="dialog-body">
+        <h2>Underline placement</h2>
+        <p class="muted">Where the underline sits below the text for <b id="ulPdfName">this PDF</b>. Journals with different fonts sometimes need a nudge. Draw an underline first to see changes live.</p>
+
+        <label class="slider ul-slider" title="Scales with the font size — the main control for clearing descenders (g, y, p)">
+          <span class="slider-label">Drop (× font)</span>
+          <input type="range" id="ulDescenderRatio" min="0" max="0.5" step="0.01" value="0.22" />
+          <output id="ulDescenderRatioVal" class="ul-val">0.22</output>
+        </label>
+
+        <label class="slider ul-slider" title="A fixed extra gap below the descenders, in points">
+          <span class="slider-label">Gap (pt)</span>
+          <input type="range" id="ulClearance" min="0" max="6" step="0.5" value="1" />
+          <output id="ulClearanceVal" class="ul-val">1.0</output>
+        </label>
+
+        <div class="dialog-actions">
+          <button type="button" class="btn" id="ulResetBtn">Reset</button>
+          <button type="button" class="btn" id="ulDefaultBtn" title="Use these values for PDFs that don't have their own setting">Set as default</button>
+          <button value="ok" class="btn btn-primary">Done</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

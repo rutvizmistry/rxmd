@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="112" fill="#0b6ab0"/>
+  <text x="50%" y="52%" dy="0.02em" text-anchor="middle" dominant-baseline="central"
+        font-family="Segoe UI, Helvetica, Arial, sans-serif" font-weight="700"
+        font-size="250" fill="#ffffff">Rx</text>
+</svg>

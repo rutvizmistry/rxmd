@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+
+# RxMD server runtime state (per-install, never commit)
+config.json
+data/
+library/
+inbox/
+
+# Machine-local editor/agent settings
+.claude/settings.local.json
