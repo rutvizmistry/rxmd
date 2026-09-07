@@ -52,6 +52,11 @@ export class Reader {
     this.tool = 'cursor';
     this.dirty = false;
     this.pdfDark = false;
+    // pdf.js creates its AnnotationEditorUIManager asynchronously, only after the
+    // first page renders. Setting annotationEditorMode before then throws
+    // ("The AnnotationEditor is not enabled."), so we defer applying the active
+    // tool until the 'annotationeditoruimanager' event fires (once per document).
+    this.editorReady = false;
 
     this.pdfShade = 'charcoal';
 
@@ -84,6 +89,13 @@ export class Reader {
       this.updateZoomLabel();
     });
     this.eventBus.on('annotationeditorstateschanged', () => { this.dirty = true; });
+    // The editor manager is (re)created for each document; apply the active tool
+    // once it exists (and re-apply if the user switched tools while it loaded).
+    this.eventBus.on('annotationeditoruimanager', () => {
+      this.editorReady = true;
+      this.applyEditorMode();
+      this.applyToolParams(); // re-send color/thickness; earlier dispatches had no listener
+    });
     this.eventBus.on('scalechanging', () => this.updateZoomLabel());
 
     this.buildSwatches();
@@ -182,6 +194,7 @@ export class Reader {
     this.syncUnderlineDialog();
     const data = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
     this.pdfDoc = await pdfjsLib.getDocument({ data, isEvalSupported: false }).promise;
+    this.editorReady = false;
     this.pdfViewer.setDocument(this.pdfDoc);
     this.linkService.setDocument(this.pdfDoc, null);
     this.setTool('cursor');
@@ -192,14 +205,21 @@ export class Reader {
     if (!TOOL_MODE.hasOwnProperty(tool)) return;
     this.tool = tool;
     this.els.tools.forEach((b) => b.classList.toggle('active', b.dataset.tool === tool));
-    try {
-      this.pdfViewer.annotationEditorMode = { mode: TOOL_MODE[tool] };
-    } catch (e) {
-      console.warn('Could not switch annotation mode', e);
-    }
+    this.applyEditorMode();
     this.markup.setActive(tool === 'underline', this.state.color.underline);
     this.syncParamsUI();
     this.applyToolParams();
+  }
+
+  // Switch pdf.js to the active tool's editor mode. No-ops until the editor
+  // manager exists; the 'annotationeditoruimanager' handler re-applies it then.
+  applyEditorMode() {
+    if (!this.editorReady || !this.pdfDoc) return;
+    try {
+      this.pdfViewer.annotationEditorMode = { mode: TOOL_MODE[this.tool] };
+    } catch (e) {
+      console.warn('Could not switch annotation mode', e);
+    }
   }
 
   // Show/hide contextual controls + set slider ranges for the active tool.
@@ -356,6 +376,7 @@ export class Reader {
     const scroll = this.els.container.scrollTop;
     const old = this.pdfDoc;
     this.pdfDoc = await pdfjsLib.getDocument({ data: new Uint8Array(bytes.slice(0)), isEvalSupported: false }).promise;
+    this.editorReady = false;
     this.pdfViewer.setDocument(this.pdfDoc);
     this.linkService.setDocument(this.pdfDoc, null);
     this.eventBus.on('pagesloaded', () => {

@@ -46,9 +46,26 @@ export class MarkupManager {
     this.opts = { ...DEFAULT_UNDERLINE_OPTS };
     this.baselines = new Map(); // pageNumber → [{ baseline, x0, x1, fontPt }] in PDF space
 
+    // Desktop: a mouse fires 'mouseup' when the selection drag ends.
     container.addEventListener('mouseup', () => {
       if (this.active) setTimeout(() => this.captureSelection(), 0);
     });
+    // Touch/pen (iPad, iPhone): selecting text does NOT reliably fire mouse
+    // events, so 'mouseup' never comes and no underline is drawn. Instead capture
+    // the selection once it settles. Debounced on 'selectionchange' so dragging
+    // the selection handles keeps extending it — the underline is drawn when the
+    // adjustments stop. captureSelection() clears the range, so it won't re-fire.
+    if (typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches) {
+      let settle = null;
+      document.addEventListener('selectionchange', () => {
+        if (!this.active) return;
+        clearTimeout(settle);
+        settle = setTimeout(() => {
+          const sel = document.getSelection();
+          if (sel && !sel.isCollapsed) this.captureSelection();
+        }, 450);
+      });
+    }
     eventBus.on('pagerendered', ({ pageNumber }) => {
       this.cacheBaselines(pageNumber);
       this.redrawPage(pageNumber);

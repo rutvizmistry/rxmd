@@ -351,3 +351,21 @@ html[data-theme="dark"] .reader.epub { background: #2a2620; }
   input, select, textarea { font-size: 16px !important; }
   .reader-tools { gap: 8px; }
 }
+
+/* ---- Touch devices (iPad, iPhone): bigger tap/drag targets for annotating ----
+   Fingers and Apple Pencil need larger hit areas than a mouse cursor. This
+   enlarges the reader's annotation toolbar and, crucially, pdf.js's resize/move
+   handles (default 6px) so a selected highlight/ink/text box can actually be
+   grabbed and moved by touch. */
+@media (pointer: coarse) {
+  .tool { min-width: 44px; height: 40px; font-size: 17px; }
+  .tool-group { gap: 3px; padding: 4px; }
+  .swatch { width: 30px; height: 30px; }
+  .ann-color { width: 34px; height: 34px; }
+  .slider input[type="range"] { width: 128px; height: 30px; }
+  .reader-tools { gap: 10px; row-gap: 8px; }
+
+  /* pdf.js annotation-editor handles + its floating toolbar. */
+  .annotationEditorLayer { --resizer-size: 18px; }
+  .annotationEditorLayer .editToolbar .buttons > * { min-width: 34px; min-height: 34px; }
+}
